@@ -8,6 +8,33 @@ public class Line {
         }
     }
 
+    private static double circunf(String unit) {
+        return unit.equals("R") ? 2 * Math.PI : 360;
+    }
+
+    public static int[] calVector(int length, double angle, String angUnit) {
+        if (!angUnit.equals("R")) angle = Math.toRadians(angle);
+        while (angle < 0) angle += (2 * Math.PI);
+
+        double m = Math.tan(angle);
+        int dx, dy;
+
+        if (Math.abs(m) < 1) {
+            int xDirection = angle > (Math.PI / 2) && angle < (3 * Math.PI / 2) ? -1 : 1;
+
+            dx = xDirection * (int) Math.round(length / Math.sqrt(1 + m * m));
+            dy = (int) Math.round(m * dx);
+        } else {
+            int yDirection = angle > 0 && angle < Math.PI ? 1 : -1;
+
+            dy = yDirection * (int) Math.round(length / Math.sqrt(1 + 1 / (m * m)));
+            dx = (int) Math.round(dy / m);
+        }
+
+        return new int[]{dx, dy};
+    }
+
+
     private static void drawThick(int x, int y, Color color, BufferedImage buffer) {
         if (x >= 0 && x < buffer.getWidth() && y >= 0 && y < buffer.getHeight()) {
             buffer.setRGB(x, y, color.getRGB());
@@ -224,62 +251,52 @@ public class Line {
     }
 
 
-    public static void drawLineSlopeThick(int x0, int y0, int length, double m, Color color, BufferedImage buffer, boolean reverse) {
-        if(Math.abs(m) < 300) {
-            // Calculate the direction vectors for the lines
-            int dx = (int) Math.round(length / Math.sqrt(1 + m * m));
-            int dy = (int) Math.round(m * dx);
+    public static int[] drawLineSlope(int x0, int y0, int length, double angle, String angUnit, Color color, BufferedImage buffer) {
+        // Calculate the direction vectors for the lines
+        int[] vector = calVector(length, angle, angUnit);
 
-            // Draw the first line
-            if(!reverse) {
-                drawLineThick(x0, y0, x0 + dx, y0 + dy, color, buffer);
-            }
-            else {
-                // Draw the second line (opposite direction with the same slope)
-                drawLineThick(x0, y0, x0 - dx, y0 - dy, color, buffer);
-            }
-        }
-        else {
-            // Calculate the direction vectors for the lines
+        drawLineThick(x0, y0, x0 + vector[0], y0 + vector[1], color, buffer);
 
-            // Draw the first line
-            if(!reverse) {
-                drawLineThick(x0, y0, x0, y0 + length, color, buffer);
-            }
-            else {
-                // Draw the second line (opposite direction with the same slope)
-                drawLineThick(x0, y0, x0, y0 - length, color, buffer);
-            }
-        }
-
-
-
+        return new int[] {x0 + vector[0], y0 + vector[1]};
     }
 
-    public static void drawLineSlope(int x0, int y0, int length, double m, Color color, BufferedImage buffer) {
+    public static void drawLineSlopeOrthogonal(int x0, int y0, int length, double angle, String angUnit, Color color, BufferedImage buffer) {
+        if(angUnit.equals("D") && angle  > 270) angle -= 360;
+
         int halfLength = length / 2;
 
-        if(Math.abs(m) < 300) {
-            // Calculate the direction vectors for the lines
-            int dx = (int) Math.round(halfLength / Math.sqrt(1 + m * m));
-            int dy = (int) Math.round(m * dx);
+        int[] vector1 = calVector(halfLength, angle + (circunf(angUnit) / 4), angUnit);
+        int[] vector2 = calVector(halfLength, angle - (circunf(angUnit) / 4), angUnit);
 
-            // Draw the first line
-            drawLineThick(x0, y0, x0 + dx, y0 + dy, color, buffer);
-
-            // Draw the second line (opposite direction with the same slope)
-            drawLineThick(x0, y0, x0 - dx, y0 - dy, color, buffer);
-        }
-        else {
-            drawLineThick(x0, y0, x0, y0 + halfLength, color, buffer);
-
-
-            // Draw the second line (opposite direction with the same slope)
-            drawLineThick(x0, y0, x0, y0 - halfLength, color, buffer);
-        }
-
+        drawLineThick(x0, y0, x0 + vector1[0], y0 + vector1[1], color, buffer);
+        drawLineThick(x0, y0, x0 + vector2[0], y0 + vector2[1], color, buffer);
     }
 
+
+    public static int[] fillRectSlope(int xc, int yc, int width, int height, double angle, String angUnit, Color color, BufferedImage buffer) {
+        if(angUnit.equals("D") && angle  > 270) angle -= 360;
+
+        int[] vector1 = calVector(width / 2, angle + (circunf(angUnit) / 4), angUnit);
+        int[] vector2 = calVector(width / 2, angle - (circunf(angUnit) / 4), angUnit);
+        int[] vector3 = calVector(height, angle, angUnit);
+
+        //System.out.println(Math.toRadians(angle));
+        int[] xPoints = {xc + vector1[0], xc + vector2[0], xc + vector2[0] + vector3[0], xc + vector1[0] + vector3[0]};
+        int[] yPoints = {yc + vector1[1], yc + vector2[1], yc + vector2[1] + vector3[1], yc + vector1[1] + vector3[1]};
+
+        /*Shape.fillCircleRect(xc, yc, 2, Color.red, buffer);
+
+        Shape.drawCircle(xc + vector1[0], yc + vector1[1], 1, Color.red, buffer);
+        Shape.drawCircle(xc + vector2[0], yc + vector2[1], 1, Color.magenta, buffer);
+        Shape.drawCircle(xc + vector2[0] + vector3[0],yc + vector2[1] + vector3[1], 1, Color.WHITE, buffer);
+        Shape.drawCircle(xc + vector1[0] + vector3[0],yc + vector1[1] + vector3[1], 1, Color.black, buffer);*/
+        Graphics g = buffer.getGraphics();
+        g.setColor(color);
+
+        g.fillPolygon(xPoints, yPoints, 4);
+
+        return new int[] {xc + vector3[0], yc + vector3[1]};
+    }
 
 
     public static void drawLineMedium(int x1, int y1, int x2, int y2, BufferedImage buffer) {
@@ -387,7 +404,6 @@ public class Line {
                     }
                 }
             } else {
-                System.out.println("jejee");
                 for (int y = y1; y >= y2; y--) {
                     Color color = new Color(r, g, b);
                     draw(x, y, color, buffer);
@@ -515,7 +531,6 @@ public class Line {
                     }
                 }
             } else {
-                System.out.println("jejee");
                 for (int y = y1; y >= y2; y--) {
                     Color color = new Color(r, g, b);
                     draw(x, y, color, buffer);
