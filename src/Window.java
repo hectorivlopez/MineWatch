@@ -41,21 +41,46 @@ public class Window extends JFrame {
 
         JMenu slicesMenu = new JMenu("Slices");
 
-        JRadioButtonMenuItem yesOption = new JRadioButtonMenuItem("Yes", true);
-        yesOption.addActionListener(e -> {
+        JRadioButtonMenuItem yesSlicesOption = new JRadioButtonMenuItem("Yes", true);
+        yesSlicesOption.addActionListener(e -> {
             bgPanel.slices = true;
         });
-        slicesMenu.add(yesOption);
-        slicesOptions.add(yesOption);
+        slicesMenu.add(yesSlicesOption);
+        slicesOptions.add(yesSlicesOption);
 
-        JRadioButtonMenuItem noOption = new JRadioButtonMenuItem("No", true);
-        noOption.addActionListener(e -> {
+        JRadioButtonMenuItem noSlicesOption = new JRadioButtonMenuItem("No", true);
+        noSlicesOption.addActionListener(e -> {
             bgPanel.slices = false;
         });
-        slicesMenu.add(noOption);
-        slicesOptions.add(noOption);
+        slicesMenu.add(noSlicesOption);
+        slicesOptions.add(noSlicesOption);
+
+        yesSlicesOption.setSelected(true);
 
         menuBar.add(slicesMenu);
+
+
+        ButtonGroup steve3Options = new ButtonGroup();
+
+        JMenu steve3Menu = new JMenu("Steve 3");
+
+        JRadioButtonMenuItem yesSteve3Option = new JRadioButtonMenuItem("Yes", true);
+        yesSteve3Option.addActionListener(e -> {
+            bgPanel.steve3 = true;
+        });
+        steve3Menu.add(yesSteve3Option);
+        steve3Options.add(yesSteve3Option);
+
+        JRadioButtonMenuItem noSteve3Option = new JRadioButtonMenuItem("No", true);
+        noSteve3Option.addActionListener(e -> {
+            bgPanel.steve3 = false;
+        });
+        steve3Menu.add(noSteve3Option);
+        steve3Options.add(noSteve3Option);
+
+        noSteve3Option.setSelected(true);
+
+        menuBar.add(steve3Menu);
 
         setJMenuBar(menuBar);
 
